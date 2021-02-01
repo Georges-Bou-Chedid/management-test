@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
 
 
 class UserConfirmationNotification extends Notification
@@ -41,7 +42,7 @@ class UserConfirmationNotification extends Notification
      */
     public function toMail($notifiable)
     {
-            $url = url('/management/users/confirm/');
+            $url = URL::signedRoute('confirm' , ['id' => $notifiable->id]);
         return (new MailMessage)
                     ->subject('Confirmation')
                     ->markdown('mail.users.user-confirmation' , ['url' => $url , 'notifiable'=>$notifiable->user_name]);

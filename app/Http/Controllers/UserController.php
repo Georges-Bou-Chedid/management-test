@@ -63,12 +63,11 @@ class UserController extends Controller
         Notification::send($users, new UserConfirmationNotification());
     }
 
-    public function storeSecret(storeUserrequest $request, $token)
+    public function confirm($id)
     {
-        dd($token);
-        /*$user->fill([
-            $request->$token => encrypt($request->email , $request->phone)
-        ])->save();*/
+       $user = User::find($id);
+       $user->email_verified_at = date('Y-m-d H:i:s');
+       $user->save();
     }
 
     public function update(UpdateUserrequest $request , $id){
