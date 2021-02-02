@@ -17,7 +17,10 @@ class UserController extends Controller
     public function Fetch(){
       $account = Account::first(); 
      $users = $account->users;
-      return UserResource::collection($users);
+      return response()->json([
+          'message' => 'success',
+          'data' => UserResource::collection($users),
+      ], 200);
       
     }
 
@@ -37,13 +40,17 @@ class UserController extends Controller
             return $users->active()->get();
         }
         if($request->term){ 
-            return UserResource::collection($term);
+            return response()->json([
+                'message' => 'success',
+                'data' => UserResource::collection($term),
+            ], 200);
         }
         
     }
 
     public function create(storeUserrequest $request){
-        
+       try
+        {
         $account = Account::first();
 
         $users = new User();
@@ -61,13 +68,29 @@ class UserController extends Controller
         $users->Add($account);
 
         Notification::send($users, new UserConfirmationNotification());
+
+        return response()->json([
+            'message' => 'success',
+            'user' => $users,
+        ], 200);
+
+    }catch(Exception $ex){
+        return response()->json([
+            'message' => 'failure',
+            'error' => 'error message',
+        ], 500);
     }
+}
 
     public function confirm($id)
     {
        $user = User::find($id);
        $user->email_verified_at = date('Y-m-d H:i:s');
        $user->save();
+       return response()->json([
+        'message' => 'success',
+        'user' => $user->user_name .' email is now verified',
+    ], 200);
     }
 
     public function update(UpdateUserrequest $request , $id){
@@ -75,7 +98,9 @@ class UserController extends Controller
         $user = User::find($id);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
-           dd('Failure');
+        return response()->json([
+            'error' => 'User Not Found',
+        ], 404);
        }
 
        if($account->verified_at == NULL){
@@ -91,6 +116,11 @@ class UserController extends Controller
         $user->save();
 
         Notification::send($user, new UserConfirmationNotification());
+
+        return response()->json([
+            'message' => 'success',
+            'user' => $user,
+        ], 200);
        }
        else{
         $user->first_name = $request->first_name;
@@ -100,6 +130,11 @@ class UserController extends Controller
         $user->password= $request->password;
         $request->password_confirmation;
         $user->save();
+
+        return response()->json([
+            'message' => 'success',
+            'user' => $user,
+        ], 200);
        }
     }
 
@@ -108,10 +143,16 @@ class UserController extends Controller
         $user = User::find($id);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
-           dd('Failure');
+        return response()->json([
+            'error' => 'User Not Found',
+        ], 404);
        }
        else{
         $user->delete();
+        return response()->json([
+            'message' => 'success',
+            'id' => 'User of ID ' . $user->id . ' was Deleted'
+        ], 200);
        }
 
     }
