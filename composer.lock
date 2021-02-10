@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4a16c3c541bd99241cab1c21ce8e83ac",
+    "content-hash": "4fb9183d2dfb2d65579fc0c8fbd8c421",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -484,6 +484,71 @@
                 "trusted proxy"
             ],
             "time": "2020-10-22T13:48:01+00:00"
+        },
+        {
+            "name": "fleetrunnr/permissions",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "C:/Users/Boush.LAPTOP-KF4T1OSH/Desktop/Laravel/permissions",
+                "reference": "391b0dbed08db7cd327d1400787b78b8ccb38c52"
+            },
+            "require": {
+                "ext-json": "*",
+                "php": "^7.4"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^v4.0",
+                "phpunit/phpunit": "^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Fleetrunnr\\Permissions\\PermissionsServiceProvider"
+                    ],
+                    "aliases": {
+                        "Permissions": "Fleetrunnr\\Permissions\\PermissionsFacade"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Fleetrunnr\\Permissions\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Fleetrunnr\\Permissions\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit --coverage-html coverage"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Elie Aad",
+                    "email": "e.aad@joinit.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "File based user permissions",
+            "homepage": "https://github.com/fleetrunnr/permissions",
+            "keywords": [
+                "fleetrunnr",
+                "permissions"
+            ],
+            "transport-options": {
+                "relative": false
+            }
         },
         {
             "name": "fruitcake/laravel-cors",
@@ -6960,12 +7025,14 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "fleetrunnr/permissions": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^7.3|^8.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }

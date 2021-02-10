@@ -27,7 +27,7 @@ class CreateAccountUserTable extends Migration
                 ->on('users')
                 ->onDelete('cascade');
         
-            $table->json('IDs')->nullable();
+            $table->string('permissions')->nullable();
         });
     }
 

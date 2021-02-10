@@ -10,6 +10,7 @@
     "require": {
         "php": "^7.3|^8.0",
         "fideloper/proxy": "^4.4",
+        "fleetrunnr/permissions": "@dev",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.12",
@@ -23,6 +24,7 @@
         "nunomaduro/collision": "^5.0",
         "phpunit/phpunit": "^9.3.3"
     },
+    
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
@@ -58,5 +60,11 @@
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
         ]
-    }
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "C:/Users/Boush.LAPTOP-KF4T1OSH/Desktop/Laravel/permissions"
+        }
+    ]
 }

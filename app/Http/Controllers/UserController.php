@@ -17,6 +17,7 @@ class UserController extends Controller
     public function Fetch(){
       $account = Account::first(); 
      $users = $account->users;
+
       return response()->json([
           'message' => 'success',
           'data' => UserResource::collection($users),
@@ -49,13 +50,13 @@ class UserController extends Controller
     }
 
     public function create(storeUserrequest $request){
-       try
-        {
         $account = Account::first();
+        $AuthUser = User::find(407);
 
+        if($AuthUser->hasPermissionTo('create-user')){
         $users = new User();
 
-        $users->first_name = $request->first_name;
+        $users->first_name = $request->first_name;  
         $users->last_name = $request->last_name;
         $users->email = $request->email;
         $users->phone = $request->phone;
@@ -67,17 +68,19 @@ class UserController extends Controller
         $users->save();
         $users->Add($account);
 
+        $users->givePermissionTo('create-user');
+     
         Notification::send($users, new UserConfirmationNotification());
 
         return response()->json([
             'message' => 'success',
             'user' => $users,
         ], 200);
-
-    }catch(Exception $ex){
+    }
+    else{
         return response()->json([
             'message' => 'failure',
-            'error' => 'error message',
+            'error' => "Sorry You Don't have permission to create a user",
         ], 500);
     }
 }
@@ -96,6 +99,7 @@ class UserController extends Controller
     public function update(UpdateUserrequest $request , $id){
         $account = Account::first();
         $user = User::find($id);
+        $AuthUser = User::find(407);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
@@ -103,6 +107,7 @@ class UserController extends Controller
         ], 404);
        }
 
+       if($AuthUser->hasPermissionTo('update-user')){
        if($account->verified_at == NULL){
 
         $user->first_name = $request->first_name;
@@ -112,6 +117,7 @@ class UserController extends Controller
         $user->avatar = $request->avatar;
         $user->password= $request->password;
         $request->password_confirmation;
+      
 
         $user->save();
 
@@ -137,23 +143,37 @@ class UserController extends Controller
         ], 200);
        }
     }
+    else{
+        return response()->json([
+            'message' => 'failure',
+            'error' => "Sorry You Don't have permission to update a user",
+        ], 500);
+    }
+    }
 
     public function delete($id){
         $account = Account::first();
         $user = User::find($id);
+        $AuthUser = User::find(407);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
             'error' => 'User Not Found',
         ], 404);
        }
-       else{
+
+       if($AuthUser->hasPermissionTo('update-user')){
         $user->delete();
         return response()->json([
             'message' => 'success',
             'id' => 'User of ID ' . $user->id . ' was Deleted'
         ], 200);
-       }
-
     }
+    else{
+        return response()->json([
+            'message' => 'failure',
+            'error' => "Sorry You Don't have permission to update a user",
+        ], 500);
+}
+}
 }

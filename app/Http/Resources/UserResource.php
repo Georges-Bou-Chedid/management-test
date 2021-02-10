@@ -21,7 +21,8 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'avatar'=> $this->avatar,
             'verified' => $this->email_verified_at ? true : false,
-            'active' =>$this->is_active
+            'active' =>$this->is_active,
+            'permissions' => $this->permissions
         ];
     }
 }
