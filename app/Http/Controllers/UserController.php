@@ -11,16 +11,18 @@ use App\Http\Requests\UpdateUserrequest;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\UserConfirmationNotification;
 use App\Http\Message\ResponseMessage;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
     public function Fetch(){
+
       $account = Account::first(); 
-     $users = $account->users;
+     $users = $account->users()->paginate(5);
 
       return response()->json([
           'message' => 'success',
-          'data' => UserResource::collection($users),
+          'data' => UserResource::collection($users)
       ], 200);
       
     }
@@ -28,32 +30,35 @@ class UserController extends Controller
     public function search(Request $request){
         $account = Account::first();
         $users = $account->users();
-        $term = $account->users;
-
+        
         $validated = $request->validate([
             'term' => 'required',
         ]);
 
-        if(request('verified')){
-          return $users->verified()->get();
+        $result = $users->where('first_name' , 'like' , '%'.$request->term.'%')->orWhere('last_name' , 'like' , '%'.$request->term.'%');
+        if($result->get()->isEmpty()){ 
+            return response()->json([
+                'message' => 'failure',
+                'error' => "No Users",
+            ], 500);
         }
-        if(request('active')){
-            return $users->active()->get();
-        }
-        if($request->term){ 
+         else{       
+            if(request('verified')){
+                return $result->verified()->get();
+              }
+            if(request('active')){
+                return $result->active()->get();
+            }
             return response()->json([
                 'message' => 'success',
-                'data' => UserResource::collection($term),
+                'data' => UserResource::collection($result->get()),
             ], 200);
         }
-        
     }
 
     public function create(storeUserrequest $request){
         $account = Account::first();
-        $AuthUser = User::find(407);
 
-        if($AuthUser->hasPermissionTo('create-user')){
         $users = new User();
 
         $users->first_name = $request->first_name;  
@@ -63,12 +68,11 @@ class UserController extends Controller
         $users->avatar = $request->avatar;
         $users->is_active = true;
         $users->password= $request->password;
-        $request->password_confirmation;
         
         $users->save();
         $users->Add($account);
 
-        $users->givePermissionTo('create-user');
+        $users->givePermissionTo('create-user','update-user');
      
         Notification::send($users, new UserConfirmationNotification());
 
@@ -76,13 +80,6 @@ class UserController extends Controller
             'message' => 'success',
             'user' => $users,
         ], 200);
-    }
-    else{
-        return response()->json([
-            'message' => 'failure',
-            'error' => "Sorry You Don't have permission to create a user",
-        ], 500);
-    }
 }
 
     public function confirm($id)
@@ -99,7 +96,6 @@ class UserController extends Controller
     public function update(UpdateUserrequest $request , $id){
         $account = Account::first();
         $user = User::find($id);
-        $AuthUser = User::find(407);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
@@ -107,18 +103,13 @@ class UserController extends Controller
         ], 404);
        }
 
-       if($AuthUser->hasPermissionTo('update-user')){
-       if($account->verified_at == NULL){
-
         $user->first_name = $request->first_name;
         $user->last_name = $request->last_name;
         $user->email = $request->email;     
         $user->phone = $request->phone;
         $user->avatar = $request->avatar;
         $user->password= $request->password;
-        $request->password_confirmation;
       
-
         $user->save();
 
         Notification::send($user, new UserConfirmationNotification());
@@ -127,34 +118,12 @@ class UserController extends Controller
             'message' => 'success',
             'user' => $user,
         ], 200);
-       }
-       else{
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;   
-        $user->phone = $request->phone;
-        $user->avatar = $request->avatar;
-        $user->password= $request->password;
-        $request->password_confirmation;
-        $user->save();
-
-        return response()->json([
-            'message' => 'success',
-            'user' => $user,
-        ], 200);
-       }
-    }
-    else{
-        return response()->json([
-            'message' => 'failure',
-            'error' => "Sorry You Don't have permission to update a user",
-        ], 500);
-    }
+       
     }
 
-    public function delete($id){
+    public function delete(deleteUserrequest $request , $id){
         $account = Account::first();
         $user = User::find($id);
-        $AuthUser = User::find(407);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
@@ -162,18 +131,11 @@ class UserController extends Controller
         ], 404);
        }
 
-       if($AuthUser->hasPermissionTo('update-user')){
         $user->delete();
         return response()->json([
             'message' => 'success',
             'id' => 'User of ID ' . $user->id . ' was Deleted'
         ], 200);
+ 
     }
-    else{
-        return response()->json([
-            'message' => 'failure',
-            'error' => "Sorry You Don't have permission to update a user",
-        ], 500);
-}
-}
 }

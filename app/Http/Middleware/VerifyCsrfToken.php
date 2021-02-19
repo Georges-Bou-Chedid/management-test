@@ -15,7 +15,7 @@ class VerifyCsrfToken extends Middleware
         '/management/users/all',
         '/management/users/search',
         '/management/users/create',
-        '/management/users/update/1',
+        '/management/users/update/3',
         '/management/users/delete/499',
         '/management/users/confirm/485'
     ];

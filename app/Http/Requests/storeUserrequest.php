@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class storeUserrequest extends FormRequest
 {
@@ -14,7 +15,13 @@ class storeUserrequest extends FormRequest
      */
     public function authorize()
     {
-        return true;
+        $AuthUser = User::find(1);
+        
+
+        if($AuthUser->hasPermissionTo('create-user')){
+            return true;
+        }
+            return false;
     }
 
     /**
