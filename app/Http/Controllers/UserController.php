@@ -22,7 +22,7 @@ class UserController extends Controller
 
       return response()->json([
           'message' => 'success',
-          'data' => UserResource::collection($users)
+          'data' => UserResource::collection($users->withPath('management/users/all'))
       ], 200);
       
     }
