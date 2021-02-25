@@ -15,10 +15,11 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function Fetch(){
-
-      $account = Account::first(); 
-     $users = $account->users()->paginate(5);
+    public function all(Request $request){
+    
+        $account = Account::first(); 
+        $paginate = $request->input('paginate');
+        $users = $account->users()->paginate($paginate);
 
       return response()->json([
           'message' => 'success',
@@ -28,35 +29,43 @@ class UserController extends Controller
     }
 
     public function search(Request $request){
-        $account = Account::first();
-        $users = $account->users();
-        
+
         $validated = $request->validate([
             'term' => 'required',
         ]);
 
+        $account = Account::first();
+        $users = $account->users();
+        
         $result = $users->where('first_name' , 'like' , '%'.$request->term.'%')->orWhere('last_name' , 'like' , '%'.$request->term.'%');
-        if($result->get()->isEmpty()){ 
+        if($result->count()==0){ 
             return response()->json([
                 'message' => 'failure',
                 'error' => "No Users",
             ], 500);
-        }
-         else{       
-            if(request('verified')){
-                return $result->verified()->get();
-              }
-            if(request('active')){
-                return $result->active()->get();
+        }      
+            if($request->has('verified')){
+                if($request->verified != NULL){
+                   $result = $result->verified();
+                }
             }
+
+            if($request->has('active')){
+                if($request->active != NULL){
+                   $result = $result->active();
+                }
+            }
+
+            $final = $result->get();
+
             return response()->json([
                 'message' => 'success',
-                'data' => UserResource::collection($result->get()),
+                'data' => UserResource::collection($final),
             ], 200);
         }
-    }
+    
 
-    public function create(storeUserrequest $request){
+    public function store(storeUserRequest $request){
         $account = Account::first();
 
         $users = new User();
@@ -67,7 +76,7 @@ class UserController extends Controller
         $users->phone = $request->phone;
         $users->avatar = $request->avatar;
         $users->is_active = true;
-        $users->password= $request->password;
+        $users->password= hash::make($request->password);
         
         $users->save();
         $users->Add($account);
@@ -85,20 +94,37 @@ class UserController extends Controller
     public function confirm($id)
     {
        $user = User::find($id);
+
+       if($user == NULL){
+        return response()->json([
+            'message' => 'failure',
+            'error' => "User Not Found",
+        ], 404);
+       }
+
        $user->email_verified_at = date('Y-m-d H:i:s');
-       $user->save();
+       $saved = $user->save();
+
+       if(!$saved){
+        return response()->json([
+            'message' => 'failure',
+            'error' => "User Not Found",
+        ], 500);
+        }
+
        return response()->json([
         'message' => 'success',
-        'user' => $user->user_name .' email is now verified',
-    ], 200);
+        'user' =>  UserResource::collection($user),
+         ], 200);
     }
 
-    public function update(UpdateUserrequest $request , $id){
+    public function update(UpdateUserRequest $request , $id){
         $account = Account::first();
         $user = User::find($id);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
+            'message' => 'failure',
             'error' => 'User Not Found',
         ], 404);
        }
@@ -108,7 +134,7 @@ class UserController extends Controller
         $user->email = $request->email;     
         $user->phone = $request->phone;
         $user->avatar = $request->avatar;
-        $user->password= $request->password;
+        $user->password= hash::make($request->password);
       
         $user->save();
 
@@ -121,12 +147,13 @@ class UserController extends Controller
        
     }
 
-    public function delete(deleteUserrequest $request , $id){
+    public function delete(DeleteUserRequest $request , $id){
         $account = Account::first();
         $user = User::find($id);
 
        if($user == NULL || $user->accounts->pluck('id')->contains($account->id) == false){
         return response()->json([
+            'message' => 'failure',
             'error' => 'User Not Found',
         ], 404);
        }
@@ -134,7 +161,7 @@ class UserController extends Controller
         $user->delete();
         return response()->json([
             'message' => 'success',
-            'id' => 'User of ID ' . $user->id . ' was Deleted'
+            'id' => $user->id 
         ], 200);
  
     }
