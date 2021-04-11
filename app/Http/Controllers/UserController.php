@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
-    public function all(Request $request){
+    public function Fetch(Request $request){
     
         $account = Account::first(); 
         $paginate = $request->input('paginate');
